@@ -6,7 +6,8 @@ und ruft den Sprint-2 gRPC Server auf.
 
 import asyncio
 import grpc
-from pyzeebe import ZeebeWorker, create_insecure_channel
+from pyzeebe import ZeebeWorker, create_camunda_cloud_channel
+from pyzeebe.errors import BusinessError
 
 # Sprint-2 gRPC imports (Pfad relativ zum Projektroot)
 import sys
@@ -16,9 +17,11 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 from invoice_metadata import invoice_pb2
 from invoice_metadata import invoice_pb2_grpc
 
-# Camunda Zeebe Verbindung (Standard: localhost:26500)
-ZEEBE_HOST = os.getenv("ZEEBE_HOST", "localhost")
-ZEEBE_PORT = int(os.getenv("ZEEBE_PORT", 26500))
+# Camunda SaaS Verbindung
+CAMUNDA_CLIENT_ID     = os.getenv("CAMUNDA_CLIENT_ID",     "2qwRDM0MDQYft~UA5o_Y27KQl6DhKmOc")
+CAMUNDA_CLIENT_SECRET = os.getenv("CAMUNDA_CLIENT_SECRET", "IyGgtDJJ2NmkZR8zdHHO9h.XG6YphoVgGez3cC~LgZni64lqVryMRA84YyW34zTh")
+CAMUNDA_CLUSTER_ID    = os.getenv("CAMUNDA_CLUSTER_ID",    "487e2664-45fe-4a21-9e53-860eddc37e5e")
+CAMUNDA_REGION        = os.getenv("CAMUNDA_REGION",        "bru-2")
 
 # gRPC Server Adresse (Sprint-2)
 GRPC_HOST = os.getenv("GRPC_HOST", "localhost")
@@ -63,20 +66,25 @@ async def save_metadata(
 
     except grpc.RpcError as e:
         print(f"[gRPC Worker] gRPC Server nicht erreichbar: {e.details()}")
-        raise Exception(f"gRPC nicht erreichbar: {e.details()}")
+        raise BusinessError(error_code="grpc-fehler", msg=f"gRPC nicht erreichbar: {e.details()}")
 
     finally:
         channel.close()
 
 
 async def main():
-    channel = create_insecure_channel(hostname=ZEEBE_HOST, port=ZEEBE_PORT)
+    channel = create_camunda_cloud_channel(
+        client_id=CAMUNDA_CLIENT_ID,
+        client_secret=CAMUNDA_CLIENT_SECRET,
+        cluster_id=CAMUNDA_CLUSTER_ID,
+        region=CAMUNDA_REGION,
+    )
     worker = ZeebeWorker(channel)
 
     # Task-Type muss mit dem Service Task im BPMN übereinstimmen!
     worker.task(task_type="save-invoice-metadata")(save_metadata)
 
-    print(f"[gRPC Worker] Verbunden mit Camunda ({ZEEBE_HOST}:{ZEEBE_PORT})")
+    print(f"[gRPC Worker] Verbunden mit Camunda SaaS (Cluster: {CAMUNDA_CLUSTER_ID})")
     print("[gRPC Worker] Warte auf Jobs vom Task-Typ 'save-invoice-metadata'...")
 
     await worker.work()

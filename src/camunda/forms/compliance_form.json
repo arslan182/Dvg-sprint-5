@@ -1,0 +1,51 @@
+{
+  "executionPlatform": "Camunda Cloud",
+  "executionPlatformVersion": "8.7.0",
+  "id": "compliance-form",
+  "schema": "https://unpkg.com/@bpmn-io/form-js@1.0.0/resources/schema.json",
+  "type": "default",
+  "components": [
+    {
+      "type": "text",
+      "text": "## Compliance-Prüfung\nBitte den Compliance-Fall manuell prüfen und entscheiden."
+    },
+    {
+      "type": "textfield",
+      "key": "rechnungs_nummer",
+      "label": "Rechnungsnummer",
+      "readonly": true
+    },
+    {
+      "type": "textfield",
+      "key": "lieferant",
+      "label": "Lieferant",
+      "readonly": true
+    },
+    {
+      "type": "number",
+      "key": "betrag",
+      "label": "Betrag",
+      "readonly": true
+    },
+    {
+      "type": "textarea",
+      "key": "compliance_bemerkung",
+      "label": "Bemerkung / Begründung",
+      "validate": {
+        "required": true
+      }
+    },
+    {
+      "type": "radio",
+      "key": "rechnung_freigegeben",
+      "label": "Entscheidung",
+      "values": [
+        { "label": "Rechnung freigeben", "value": true },
+        { "label": "Rechnung ablehnen", "value": false }
+      ],
+      "validate": {
+        "required": true
+      }
+    }
+  ]
+}

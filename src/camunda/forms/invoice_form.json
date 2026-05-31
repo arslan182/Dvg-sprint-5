@@ -1,0 +1,74 @@
+{
+  "executionPlatform": "Camunda Cloud",
+  "executionPlatformVersion": "8.7.0",
+  "id": "invoice-form",
+  "schema": "https://unpkg.com/@bpmn-io/form-js@1.0.0/resources/schema.json",
+  "type": "default",
+  "components": [
+    {
+      "type": "text",
+      "text": "## Rechnungsdaten erfassen\nBitte alle Felder ausfüllen."
+    },
+    {
+      "type": "textfield",
+      "key": "rechnungs_nummer",
+      "label": "Rechnungsnummer",
+      "validate": {
+        "required": true
+      }
+    },
+    {
+      "type": "textfield",
+      "key": "lieferant",
+      "label": "Lieferant",
+      "validate": {
+        "required": true
+      }
+    },
+    {
+      "type": "number",
+      "key": "betrag",
+      "label": "Betrag",
+      "validate": {
+        "required": true,
+        "min": 0
+      }
+    },
+    {
+      "type": "select",
+      "key": "waehrung",
+      "label": "Währung",
+      "values": [
+        { "label": "EUR", "value": "EUR" },
+        { "label": "USD", "value": "USD" },
+        { "label": "CHF", "value": "CHF" }
+      ],
+      "validate": {
+        "required": true
+      }
+    },
+    {
+      "type": "datetime",
+      "key": "datum",
+      "label": "Rechnungsdatum",
+      "subtype": "date",
+      "dateLabel": "Datum",
+      "validate": {
+        "required": true
+      }
+    },
+    {
+      "type": "select",
+      "key": "eingangskanal",
+      "label": "Eingangskanal",
+      "values": [
+        { "label": "E-Mail", "value": "email" },
+        { "label": "Portal", "value": "portal" },
+        { "label": "EDI", "value": "edi" }
+      ],
+      "validate": {
+        "required": true
+      }
+    }
+  ]
+}

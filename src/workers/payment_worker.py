@@ -7,12 +7,15 @@ und schickt eine Nachricht an RabbitMQ (zahlungs_auftraege Queue).
 import asyncio
 import json
 import pika
-from pyzeebe import ZeebeWorker, create_insecure_channel
+from pyzeebe import ZeebeWorker, create_camunda_cloud_channel
+from pyzeebe.errors import BusinessError
 import os
 
-# Camunda Zeebe Verbindung
-ZEEBE_HOST = os.getenv("ZEEBE_HOST", "localhost")
-ZEEBE_PORT = int(os.getenv("ZEEBE_PORT", 26500))
+# Camunda SaaS Verbindung
+CAMUNDA_CLIENT_ID     = os.getenv("CAMUNDA_CLIENT_ID",     "2qwRDM0MDQYft~UA5o_Y27KQl6DhKmOc")
+CAMUNDA_CLIENT_SECRET = os.getenv("CAMUNDA_CLIENT_SECRET", "IyGgtDJJ2NmkZR8zdHHO9h.XG6YphoVgGez3cC~LgZni64lqVryMRA84YyW34zTh")
+CAMUNDA_CLUSTER_ID    = os.getenv("CAMUNDA_CLUSTER_ID",    "487e2664-45fe-4a21-9e53-860eddc37e5e")
+CAMUNDA_REGION        = os.getenv("CAMUNDA_REGION",        "bru-2")
 
 # RabbitMQ Verbindung (Sprint-2)
 RABBITMQ_HOST = os.getenv("RABBITMQ_HOST", "localhost")
@@ -62,17 +65,22 @@ async def initiate_payment(
 
     except Exception as e:
         print(f"[Payment Worker] Fehler beim Senden an RabbitMQ: {e}")
-        raise Exception(f"RabbitMQ nicht erreichbar: {e}")
+        raise BusinessError(error_code="rabbitmq-fehler", msg=f"RabbitMQ nicht erreichbar: {e}")
 
 
 async def main():
-    channel = create_insecure_channel(hostname=ZEEBE_HOST, port=ZEEBE_PORT)
+    channel = create_camunda_cloud_channel(
+        client_id=CAMUNDA_CLIENT_ID,
+        client_secret=CAMUNDA_CLIENT_SECRET,
+        cluster_id=CAMUNDA_CLUSTER_ID,
+        region=CAMUNDA_REGION,
+    )
     worker = ZeebeWorker(channel)
 
     # Task-Type muss mit dem Service Task im BPMN übereinstimmen!
     worker.task(task_type="initiate-payment")(initiate_payment)
 
-    print(f"[Payment Worker] Verbunden mit Camunda ({ZEEBE_HOST}:{ZEEBE_PORT})")
+    print(f"[Payment Worker] Verbunden mit Camunda SaaS (Cluster: {CAMUNDA_CLUSTER_ID})")
     print("[Payment Worker] Warte auf Jobs vom Task-Typ 'initiate-payment'...")
 
     await worker.work()
