@@ -5,10 +5,10 @@
       <zeebe:subscription correlationKey="=fehlende-informationen-nachricht" />
     </bpmn:extensionElements>
   </bpmn:message>
-  <bpmn:collaboration id="Collaboration_1qpzbq2">
-    <bpmn:participant id="Participant_1oucrl9" name="Unternehmen" processRef="Process_1ycjjqr" />
+  <bpmn:collaboration id="Collaboration_1qpzbq2" name="Workflow-Sprint-4">
+    <bpmn:participant id="Participant_1oucrl9" name="Unternehmen" processRef="Process_workflow_sprint4" />
   </bpmn:collaboration>
-  <bpmn:process id="Process_1ycjjqr" name="Test" isExecutable="true">
+  <bpmn:process id="Process_workflow_sprint4" name="Workflow-Sprint-4" isExecutable="true">
     <bpmn:extensionElements />
     <bpmn:startEvent id="StartEvent_1" name="Rechnung erhalten">
       <bpmn:outgoing>Flow_1dh7htn</bpmn:outgoing>
@@ -472,16 +472,16 @@
         <dc:Bounds x="1780" y="430" width="100" height="80" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Event_0es4k2o_di" bpmnElement="Event_0es4k2o">
-        <dc:Bounds x="2622" y="952" width="36" height="36" />
-        <bpmndi:BPMNLabel>
-          <dc:Bounds x="2549" y="995" width="82" height="14" />
-        </bpmndi:BPMNLabel>
-      </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Event_1w5r2v8_di" bpmnElement="Event_1w5r2v8">
         <dc:Bounds x="2162" y="952" width="36" height="36" />
         <bpmndi:BPMNLabel>
           <dc:Bounds x="2108" y="995" width="64" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_0es4k2o_di" bpmnElement="Event_0es4k2o">
+        <dc:Bounds x="2622" y="952" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="2549" y="995" width="82" height="14" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNEdge id="Flow_1dh7htn_di" bpmnElement="Flow_1dh7htn">

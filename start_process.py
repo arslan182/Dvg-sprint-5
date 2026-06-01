@@ -48,7 +48,7 @@ async def main():
 
     print(f"Prozess gestartet!")
     print(f"Process Instance Key: {instance.process_instance_key}")
-    print(f"Operate: https://operate.camunda.io/{CAMUNDA_CLUSTER_ID}/processes/{instance.process_instance_key}")
+    print(f"Operate: https://{CAMUNDA_REGION}.operate.camunda.io/{CAMUNDA_CLUSTER_ID}/operate/processes/{instance.process_instance_key}")
 
     await channel.close()
 
