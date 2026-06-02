@@ -8,7 +8,7 @@
 
 ## Ziel von Sprint 4
 
-In Sprint 4 haben wir den Rechnungsverarbeitungsprozess als ausführbaren BPMN-Workflow in Camunda 8 SaaS modelliert und mit den Diensten aus Sprint 2 verbunden. Damit läuft der gesamte Prozess — von der Rechnungserfassung bis zur Archivierung — orchestriert durch Camunda.
+In Sprint 4 haben wir den Rechnungsverarbeitungsprozess als ausführbaren BPMN-Workflow in Camunda 8 SaaS modelliert und mit den Diensten aus Sprint 1 verbunden. Damit läuft der gesamte Prozess — von der Rechnungserfassung bis zur Archivierung — orchestriert durch Camunda.
 
 ---
 
