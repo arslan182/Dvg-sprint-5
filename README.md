@@ -1,12 +1,14 @@
-# Dvg-Sprint-4 – Rechnungsverarbeitung mit Camunda 8
+# Dvg-Sprint-5 – RPA-Bot für die ERP-Rechnungserfassung
 
 **Hochschule Karlsruhe** | Modul: Digitalisierung von Geschäftsprozessen | Gruppe G11
 
 ---
 
-## Was ist Sprint-4?
+## Was ist Sprint-5?
 
-Sprint 4 baut auf dem Sprint-1 auf und verbindet es mit einem echten BPMN-Prozess in Camunda 8 SaaS. Rechnungen laufen jetzt durch einen modellierten Workflow — mit automatischen Prüfungen, manuellen Aufgaben und Fehlerbehandlung wenn ein Dienst nicht erreichbar ist.
+Sprint 5 baut auf dem Camunda-Workflow aus Sprint 4 auf. Wir haben einen UiPath RPA-Bot gebaut, der den bisher manuellen Schritt "Rechnungsdaten im ERP-System eingeben" automatisiert. Der Bot öffnet das ERP-Frontend im Browser und füllt das Formular selbstständig mit den Rechnungsdaten aus — und als optionales Extra haben wir ihn direkt in den Camunda-Prozess eingebunden, sodass alles automatisch läuft.
+
+Der Bot läuft als Unattended Bot in der UiPath Cloud und wird über den Camunda UiPath Connector getriggert.
 
 ---
 
@@ -31,7 +33,7 @@ Camunda 8 SaaS (BPMN-Prozess)
 ## Projektstruktur
 
 ```
-Dvg-sprint-4/
+Dvg-sprint-5/
 ├── src/
 │   ├── workers/
 │   │   ├── auto_workers.py        # Automatische Camunda Job Worker
@@ -45,6 +47,7 @@ Dvg-sprint-4/
 │   ├── payment_system/
 │   │   └── payment.py             # RabbitMQ Consumer (aus Sprint 2)
 │   └── camunda/
+│       ├── Workflow-Sprint-4.bpmn # BPMN-Prozess (angepasst für Sprint 5)
 │       └── compliance_check.dmn   # DMN Entscheidungstabelle
 ├── tests/
 │   └── test_workers.py
@@ -53,9 +56,12 @@ Dvg-sprint-4/
 │       ├── RabbitMQ/docker-compose.yml
 │       └── postgres/docker-compose.yml
 ├── docs/
-│   └── documentation.md
+│   ├── documentation.md           # Sprint 4 Dokumentation
+│   └── sprint5_dokumentation.md   # Sprint 5 Dokumentation (RPA)
 ├── logs/
 │   └── README.md
+├── erp_frontend.html              # ERP-Frontend (GitHub Pages deployed)
+├── rechnung_data.json             # Testdaten für den RPA-Bot
 ├── start_process.py
 ├── send_correction.py
 ├── .env
@@ -212,8 +218,24 @@ python send_correction.py R-001
 
 ---
 
+## RPA-Bot (Sprint 5)
+
+Der Bot läuft in UiPath Studio Web und ist unter dem Namen **"Solution"** im UiPath Orchestrator deployed (Shared Folder).
+
+Er öffnet das ERP-Frontend in Edge und füllt das Formular per JavaScript Injection aus. Wir haben JavaScript Injection statt der normalen TypeInto-Aktivitäten verwendet, weil die Selektoren bei der cloud-gehosteten Seite nicht stabil waren.
+
+Das ERP-Frontend ist erreichbar unter:
+```
+https://arslan182.github.io/Dvg-sprint-5/erp_frontend.html
+```
+
+Im Camunda-Prozess ersetzt der Bot den bisherigen User Task "Rechnungsdaten im ERP-System eingeben" — der Task ist jetzt ein Service Task mit dem Camunda UiPath Connector (`io.camunda:uipath:1`).
+
+---
+
 ## Bekannte Einschränkungen
 
-- Der Camunda Trial Cluster pausiert automatisch nach längerer Inaktivität.
+- Der Camunda Trial Cluster pausiert automatisch nach längerer Inaktivität — vor dem Testen prüfen ob er noch läuft.
 - Prozessvariablen die vom Worker gesetzt werden (z.B. `validierung_erfolgreich`, `compliance_notwendig`) sollten beim Start nicht manuell mitgegeben werden.
 - Für `rechnung_freigegeben` wird eine Checkbox verwendet statt Dropdown, da Dropdowns nur Strings speichern.
+- Der UiPath Bot läuft in einer Cloud-Session — das ausgefüllte Formular ist nur im UiPath Live Stream sichtbar, nicht im lokalen Browser.

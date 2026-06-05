@@ -1,0 +1,22 @@
+{
+  "name": "ERP_RechnungsBot",
+  "description": "RPA Bot – Automatische Erfassung von Rechnungsdaten im ERP-System (Sprint 5, Gruppe G11, HKA)",
+  "main": "Main.xaml",
+  "outputType": "Process",
+  "expressionLanguage": "VisualBasic",
+  "targetFramework": "Windows",
+  "dependencies": {
+    "UiPath.System.Activities": "[23.10.2, )",
+    "UiPath.UIAutomation.Activities": "[23.10.2, )"
+  },
+  "schemaVersion": "4.0",
+  "studioVersion": "23.10.0.0",
+  "projectVersion": "1.0.0",
+  "runtimeOptions": {
+    "autoDispose": false,
+    "pauseActivityScheduler": false
+  },
+  "designOptions": {
+    "projectProfile": "Developement"
+  }
+}

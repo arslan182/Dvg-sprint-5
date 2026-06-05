@@ -122,15 +122,27 @@
       <bpmn:incoming>Flow_11bc1vh</bpmn:incoming>
       <bpmn:outgoing>Flow_055qs7x</bpmn:outgoing>
     </bpmn:serviceTask>
-    <bpmn:userTask id="Activity_1e8b8pr" name="Rechnungsdaten im ERP-System eingeben">
+    <bpmn:serviceTask id="Activity_1e8b8pr" name="Rechnungsdaten im ERP-System eingeben (RPA)">
       <bpmn:extensionElements>
-        <zeebe:userTask />
-        <zeebe:formDefinition formId="invoice-form" />
-        <zeebe:assignmentDefinition candidateGroups="sachbearbeiter" />
+        <zeebe:taskDefinition type="io.camunda:uipath:1" />
+        <zeebe:ioMapping>
+          <zeebe:input source="bearer" target="authentication.type" />
+          <zeebe:input source="https://cloud.uipath.com/identity_/connect/token" target="authentication.oauthTokenEndpoint" />
+          <zeebe:input source="c1235031-afb5-4b1e-98e4-98a36e4109cd" target="authentication.clientId" />
+          <zeebe:input source="A9n6#?DCU#(a)TnON(#~lr$pAr_S@$34cTSuSu(Wng@DA5?_MyDJFNezXhNf9afc" target="authentication.clientSecret" />
+          <zeebe:input source="OR.Execution" target="authentication.scopes" />
+          <zeebe:input source="https://cloud.uipath.com" target="orchestratorUrl" />
+          <zeebe:input source="gruppe11dvg" target="organizationName" />
+          <zeebe:input source="DefaultTenant" target="tenantName" />
+          <zeebe:input source="Solution" target="folderPath" />
+          <zeebe:input source="RPA Workflow" target="processName" />
+          <zeebe:input source="startJob" target="operationType" />
+          <zeebe:input source="{}" target="jobArguments" />
+        </zeebe:ioMapping>
       </bpmn:extensionElements>
       <bpmn:incoming>Flow_1pf4yyn</bpmn:incoming>
       <bpmn:outgoing>Flow_1tcfijm</bpmn:outgoing>
-    </bpmn:userTask>
+    </bpmn:serviceTask>
     <bpmn:serviceTask id="Activity_0u31h87" name="Zahlungsauftrag per RabbitMQ senden">
       <bpmn:extensionElements>
         <zeebe:taskDefinition type="initiate-payment" retries="0" />
