@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ERP-System – Rechnungserfassung</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', Arial, sans-serif; background: #f0f2f5; color: #333; }
+    .topbar { background: #1a3c6e; color: #fff; display: flex; align-items: center; justify-content: space-between; padding: 0 32px; height: 56px; }
+    .topbar .logo { font-size: 18px; font-weight: 700; letter-spacing: 1px; }
+    .topbar .user { font-size: 13px; opacity: 0.85; }
+    .layout { display: flex; min-height: calc(100vh - 56px); }
+    .sidebar { width: 200px; background: #22487a; color: #cdd8e8; padding-top: 24px; flex-shrink: 0; }
+    .sidebar ul { list-style: none; }
+    .sidebar ul li { padding: 12px 24px; font-size: 14px; cursor: pointer; border-left: 3px solid transparent; }
+    .sidebar ul li:hover { background: rgba(255,255,255,0.08); }
+    .sidebar ul li.active { background: rgba(255,255,255,0.12); border-left-color: #4fa3e0; color: #fff; font-weight: 600; }
+    .main { flex: 1; padding: 32px 40px; }
+    .page-title { font-size: 22px; font-weight: 700; color: #1a3c6e; margin-bottom: 4px; }
+    .page-subtitle { font-size: 13px; color: #777; margin-bottom: 28px; }
+    .card { background: #fff; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); padding: 28px 32px; max-width: 720px; }
+    .card-title { font-size: 15px; font-weight: 700; color: #1a3c6e; border-bottom: 2px solid #e8edf4; padding-bottom: 12px; margin-bottom: 24px; }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px 28px; }
+    .form-group { display: flex; flex-direction: column; }
+    .form-group.full-width { grid-column: 1 / -1; }
+    label { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: #555; margin-bottom: 6px; }
+    label .required { color: #e05252; margin-left: 2px; }
+    input[type="text"], input[type="number"], input[type="date"], select, textarea { border: 1px solid #c8d0dc; border-radius: 5px; padding: 9px 12px; font-size: 14px; font-family: inherit; color: #333; background: #fafbfd; transition: border-color 0.2s, box-shadow 0.2s; outline: none; }
+    input:focus, select:focus, textarea:focus { border-color: #4fa3e0; box-shadow: 0 0 0 3px rgba(79,163,224,0.15); background: #fff; }
+    textarea { resize: vertical; min-height: 72px; }
+    .betrag-row { display: flex; gap: 8px; }
+    .betrag-row input { flex: 1; }
+    .betrag-row select { width: 90px; flex-shrink: 0; }
+    .divider { grid-column: 1 / -1; border: none; border-top: 1px solid #e8edf4; margin: 4px 0; }
+    .section-label { grid-column: 1 / -1; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #4fa3e0; margin-bottom: -8px; }
+    .btn-row { display: flex; gap: 12px; margin-top: 28px; padding-top: 20px; border-top: 1px solid #e8edf4; }
+    .btn { padding: 10px 24px; border-radius: 5px; font-size: 14px; font-weight: 600; cursor: pointer; border: none; transition: background 0.2s, transform 0.1s; }
+    .btn:active { transform: scale(0.98); }
+    .btn-primary { background: #1a3c6e; color: #fff; }
+    .btn-primary:hover { background: #22487a; }
+    .btn-secondary { background: #e8edf4; color: #333; }
+    .btn-secondary:hover { background: #d5dde8; }
+    .btn-reset { background: transparent; color: #888; border: 1px solid #c8d0dc; }
+    .btn-reset:hover { background: #f5f5f5; }
+    #successBanner { display: none; background: #d4edda; border: 1px solid #a3d8a8; border-radius: 6px; padding: 14px 18px; margin-bottom: 20px; font-size: 14px; color: #1e6b2e; font-weight: 600; }
+  </style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="logo">&#9776;&nbsp;&nbsp;EnterpriseERP 4.2</div>
+  <div class="user">&#128100; Sachbearbeiter | Buchhaltung</div>
+</div>
+
+<div class="layout">
+  <nav class="sidebar">
+    <ul>
+      <li>Dashboard</li>
+      <li>Lieferanten</li>
+      <li class="active">Rechnungen</li>
+      <li>Zahlungen</li>
+      <li>Berichte</li>
+      <li>Einstellungen</li>
+    </ul>
+  </nav>
+
+  <main class="main">
+    <div class="page-title">Rechnungserfassung</div>
+    <div class="page-subtitle">Neue Eingangsrechnung manuell erfassen und im System speichern</div>
+
+    <div id="successBanner"></div>
+
+    <div class="card">
+      <div class="card-title">Neue Rechnung erfassen</div>
+
+      <form id="rechnungForm">
+        <div class="form-grid">
+
+          <div class="section-label">Stammdaten</div>
+
+          <div class="form-group">
+            <label>Rechnungsnummer <span class="required">*</span></label>
+            <input type="text" id="rechnungs_nummer" name="rechnungs_nummer" placeholder="z.B. RE-2024-00123" autocomplete="off" />
+          </div>
+
+          <div class="form-group">
+            <label>Lieferant <span class="required">*</span></label>
+            <input type="text" id="lieferant" name="lieferant" placeholder="z.B. Mustermann GmbH" autocomplete="off" />
+          </div>
+
+          <div class="form-group">
+            <label>Rechnungsdatum <span class="required">*</span></label>
+            <input type="date" id="datum" name="datum" />
+          </div>
+
+          <div class="form-group">
+            <label>Eingangskanal <span class="required">*</span></label>
+            <select id="eingangskanal" name="eingangskanal">
+              <option value="">– bitte wählen –</option>
+              <option value="EDI">EDI</option>
+              <option value="Email">Email</option>
+              <option value="Portal">Portal</option>
+            </select>
+          </div>
+
+          <hr class="divider" />
+
+          <div class="section-label">Betrag &amp; Zahlung</div>
+
+          <div class="form-group">
+            <label>Betrag <span class="required">*</span></label>
+            <div class="betrag-row">
+              <input type="number" id="betrag" name="betrag" placeholder="0.00" step="0.01" min="0" />
+              <select id="waehrung" name="waehrung">
+                <option value="EUR">EUR</option>
+                <option value="USD">USD</option>
+                <option value="CHF">CHF</option>
+                <option value="GBP">GBP</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Status</label>
+            <select id="status" name="status">
+              <option value="OFFEN">Offen</option>
+              <option value="BEZAHLT">Bezahlt</option>
+              <option value="ABGELEHNT">Abgelehnt</option>
+            </select>
+          </div>
+
+          <hr class="divider" />
+
+          <div class="section-label">Zusatzinformationen</div>
+
+          <div class="form-group full-width">
+            <label>Bemerkung</label>
+            <textarea id="bemerkung" name="bemerkung" placeholder="Optionale Notizen zur Rechnung…"></textarea>
+          </div>
+
+        </div>
+
+        <div class="btn-row">
+          <button type="submit" class="btn btn-primary">&#128190; Rechnung speichern</button>
+          <button type="button" class="btn btn-secondary" onclick="vorschau()">&#128065; Vorschau</button>
+          <button type="reset" class="btn btn-reset" onclick="resetForm()">Zur&#252;cksetzen</button>
+        </div>
+      </form>
+    </div>
+  </main>
+</div>
+
+<script>
+  document.getElementById('datum').valueAsDate = new Date();
+
+  document.getElementById('rechnungForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    var nr   = document.getElementById('rechnungs_nummer').value;
+    var lief = document.getElementById('lieferant').value;
+    var banner = document.getElementById('successBanner');
+    banner.textContent = '✓ Rechnung ' + (nr || '–') + ' von „' + (lief || '–') + '“ erfolgreich gespeichert!';
+    banner.style.display = 'block';
+    banner.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    setTimeout(function() { banner.style.display = 'none'; }, 5000);
+  });
+
+  function vorschau() {
+    var nr  = document.getElementById('rechnungs_nummer').value || '–';
+    var lf  = document.getElementById('lieferant').value || '–';
+    var bt  = document.getElementById('betrag').value || '–';
+    var wae = document.getElementById('waehrung').value;
+    var dt  = document.getElementById('datum').value || '–';
+    alert('Vorschau\n————————————\nNr.:       ' + nr + '\nLieferant: ' + lf + '\nBetrag:    ' + bt + ' ' + wae + '\nDatum:     ' + dt);
+  }
+
+  function resetForm() {
+    document.getElementById('datum').valueAsDate = new Date();
+    document.getElementById('successBanner').style.display = 'none';
+  }
+</script>
+
+</body>
+</html>

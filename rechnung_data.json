@@ -1,0 +1,10 @@
+{
+  "rechnungs_nummer": "RE-2026-00042",
+  "lieferant": "Mustermann GmbH",
+  "datum": "2026-06-05",
+  "eingangskanal": "Email",
+  "betrag": "5500",
+  "waehrung": "EUR",
+  "status": "OFFEN",
+  "bemerkung": "Automatisch erfasst via RPA Bot"
+}
