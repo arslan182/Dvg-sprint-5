@@ -1,4 +1,4 @@
-# Terminal Logs – Sprint 4
+# Terminal Logs – Sprint 5
 
 Hier sind die Terminal-Ausgaben der Worker und des Servers gespeichert. Die Logs zeigen den kompletten Ablauf eines Testlaufs.
 
