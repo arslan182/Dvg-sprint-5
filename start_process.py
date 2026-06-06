@@ -10,7 +10,7 @@ CAMUNDA_CLIENT_SECRET = os.getenv("CAMUNDA_CLIENT_SECRET")
 CAMUNDA_CLUSTER_ID    = os.getenv("CAMUNDA_CLUSTER_ID")
 CAMUNDA_REGION        = os.getenv("CAMUNDA_REGION")
 
-PROZESS_ID = "Process_workflow_sprint4"
+PROZESS_ID = "Process_workflow_sprint5"
 
 VARIABLEN = {
     "eingangskanal": "email",
@@ -26,7 +26,7 @@ VARIABLEN = {
 
 async def main():
     print("\n" + "=" * 55)
-    print("  Dvg Sprint 4 – Prozess starten")
+    print("  Dvg Sprint 5 – Prozess starten")
     print("=" * 55)
     print(f"\n  Starte Prozess mit folgenden Variablen:")
     for k, v in VARIABLEN.items():

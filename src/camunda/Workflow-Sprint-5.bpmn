@@ -5,10 +5,10 @@
       <zeebe:subscription correlationKey="=fehlende-informationen-nachricht" />
     </bpmn:extensionElements>
   </bpmn:message>
-  <bpmn:collaboration id="Collaboration_1qpzbq2" name="Workflow-Sprint-4">
-    <bpmn:participant id="Participant_1oucrl9" name="Unternehmen" processRef="Process_workflow_sprint4" />
+  <bpmn:collaboration id="Collaboration_1qpzbq2" name="Workflow-Sprint-5">
+    <bpmn:participant id="Participant_1oucrl9" name="Unternehmen" processRef="Process_workflow_sprint5" />
   </bpmn:collaboration>
-  <bpmn:process id="Process_workflow_sprint4" name="Workflow-Sprint-4" isExecutable="true">
+  <bpmn:process id="Process_workflow_sprint5" name="Workflow-Sprint-5" isExecutable="true">
     <bpmn:extensionElements />
     <bpmn:startEvent id="StartEvent_1" name="Rechnung erhalten">
       <bpmn:outgoing>Flow_1dh7htn</bpmn:outgoing>
@@ -124,21 +124,7 @@
     </bpmn:serviceTask>
     <bpmn:serviceTask id="Activity_1e8b8pr" name="Rechnungsdaten im ERP-System eingeben (RPA)">
       <bpmn:extensionElements>
-        <zeebe:taskDefinition type="io.camunda:uipath:1" />
-        <zeebe:ioMapping>
-          <zeebe:input source="bearer" target="authentication.type" />
-          <zeebe:input source="https://cloud.uipath.com/identity_/connect/token" target="authentication.oauthTokenEndpoint" />
-          <zeebe:input source="c1235031-afb5-4b1e-98e4-98a36e4109cd" target="authentication.clientId" />
-          <zeebe:input source="A9n6#?DCU#(a)TnON(#~lr$pAr_S@$34cTSuSu(Wng@DA5?_MyDJFNezXhNf9afc" target="authentication.clientSecret" />
-          <zeebe:input source="OR.Execution" target="authentication.scopes" />
-          <zeebe:input source="https://cloud.uipath.com" target="orchestratorUrl" />
-          <zeebe:input source="gruppe11dvg" target="organizationName" />
-          <zeebe:input source="DefaultTenant" target="tenantName" />
-          <zeebe:input source="Solution" target="folderPath" />
-          <zeebe:input source="RPA Workflow" target="processName" />
-          <zeebe:input source="startJob" target="operationType" />
-          <zeebe:input source="{}" target="jobArguments" />
-        </zeebe:ioMapping>
+        <zeebe:taskDefinition type="uipath-erp-queue" />
       </bpmn:extensionElements>
       <bpmn:incoming>Flow_1pf4yyn</bpmn:incoming>
       <bpmn:outgoing>Flow_1tcfijm</bpmn:outgoing>

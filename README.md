@@ -106,6 +106,14 @@ DB_HOST=localhost
 DB_NAME=invoice_db
 DB_USER=admin
 DB_PASSWORD=...
+
+UIPATH_CLIENT_ID=...
+UIPATH_CLIENT_SECRET=...
+UIPATH_ORG=gruppe11dvg
+UIPATH_TENANT=DefaultTenant
+UIPATH_FOLDER_ID=7919369
+UIPATH_QUEUE_NAME=ERP-Rechnungen
+UIPATH_PROCESS_NAME=RPA Workflow
 ```
 
 ### 2. Docker starten
@@ -162,6 +170,7 @@ Der Prozess heißt **Workflow-Sprint-4** in Camunda 8 SaaS.
 | rechnung-erfassen | auto_workers.py | Zeitstempel und Status setzen |
 | automatische-validierung | auto_workers.py | Pflichtfelder prüfen |
 | compliance-check | auto_workers.py | Schwellenwert prüfen |
+| uipath-erp-queue | auto_workers.py | UiPath Bot starten (StartJobs API) |
 | save-invoice-metadata | grpc_worker.py | Metadaten per gRPC speichern |
 | initiate-payment | payment_worker.py | Zahlungsauftrag per RabbitMQ |
 | rechnung-archivieren | auto_workers.py | Archivieren |
@@ -220,16 +229,24 @@ python send_correction.py R-001
 
 ## RPA-Bot (Sprint 5)
 
-Der Bot läuft in UiPath Studio Web und ist unter dem Namen **"Solution"** im UiPath Orchestrator deployed (Shared Folder).
+Der Bot läuft als Unattended Cloud Robot in UiPath Orchestrator (Folder: Solution). Er wird automatisch vom Python Worker über die UiPath StartJobs API gestartet, sobald Camunda den Task `uipath-erp-queue` picked.
 
-Er öffnet das ERP-Frontend in Edge und füllt das Formular per JavaScript Injection aus. Wir haben JavaScript Injection statt der normalen TypeInto-Aktivitäten verwendet, weil die Selektoren bei der cloud-gehosteten Seite nicht stabil waren.
+Der Bot öffnet das ERP-Frontend in Edge und füllt das Formular per JavaScript Injection aus. Die Rechnungsdaten (Nummer, Lieferant, Betrag, Währung, Eingangskanal) werden als InputArguments vom Camunda Worker übergeben.
 
 Das ERP-Frontend ist erreichbar unter:
 ```
 https://arslan182.github.io/Dvg-sprint-5/erp_frontend.html
 ```
 
-Im Camunda-Prozess ersetzt der Bot den bisherigen User Task "Rechnungsdaten im ERP-System eingeben" — der Task ist jetzt ein Service Task mit dem Camunda UiPath Connector (`io.camunda:uipath:1`).
+### UiPath Konfiguration
+
+- **Org:** gruppe11dvg
+- **Tenant:** DefaultTenant
+- **Folder:** Solution (ID: 7919369)
+- **Process:** RPA Workflow (v1.0.2)
+- **Robot:** Default Robot (Unattended, Cloud Serverless)
+- **External App:** Camunda-Connector (OAuth2 Client Credentials)
+- **App Scopes:** OR.Jobs, OR.Jobs.Write, OR.Execution, OR.Execution.Write, OR.Queues, OR.Queues.Read, OR.Queues.Write
 
 ---
 

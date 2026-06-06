@@ -50,42 +50,36 @@ Manual Trigger
 └── Use Browser Edge: ERP-System – Rechnungserfassung
     │   URL: https://arslan182.github.io/Dvg-sprint-5/erp_frontend.html
     │
-    ├── Assign: in_rechnungs_nummer = "RE-2026-00042"
-    ├── Assign: in_lieferant = "Mustermann GmbH"
-    ├── Assign: in_betrag = "5500"
-    │
     └── Inject Js Script
-        → Alle Felder per getElementById befüllen
+        → Alle Felder per getElementById mit den Input Arguments befüllen
         → Formular abschicken
 ```
+
+### Input Arguments
+
+Der Workflow empfängt folgende Input Arguments, die beim Start vom Camunda Worker übergeben werden:
+
+| Argument | Typ | Beschreibung |
+|----------|-----|--------------|
+| in_rechnungs_nummer | String | Rechnungsnummer aus dem Prozess |
+| in_lieferant | String | Lieferantenname |
+| in_betrag | String | Rechnungsbetrag |
+| in_waehrung | String | Währung (EUR, USD, etc.) |
+| in_eingangskanal | String | Eingangskanal (email, EDI, Portal) |
 
 ### JavaScript-Code
 
 ```javascript
 function (element, input) {
-  document.getElementById('rechnungs_nummer').value = 'RE-2026-00042';
-  document.getElementById('lieferant').value = 'Mustermann GmbH';
-  document.getElementById('betrag').value = '5500';
-  document.getElementById('eingangskanal').value = 'Email';
-  document.getElementById('waehrung').value = 'EUR';
-  document.getElementById('status').value = 'OFFEN';
-  document.getElementById('bemerkung').value = 'Automatisch erfasst via RPA Bot';
+  document.getElementById('rechnungs_nummer').value = input.rechnungs_nummer;
+  document.getElementById('lieferant').value = input.lieferant;
+  document.getElementById('betrag').value = input.betrag;
+  document.getElementById('waehrung').value = input.waehrung;
+  document.getElementById('eingangskanal').value = input.eingangskanal;
+  document.getElementById('datum').valueAsDate = new Date();
   document.querySelector('button[type=submit]').click();
 }
 ```
-
-### Testdaten
-
-Die Rechnungsdaten kommen aus `rechnung_data.json`:
-
-| Feld | Wert |
-|------|------|
-| Rechnungsnummer | RE-2026-00042 |
-| Lieferant | Mustermann GmbH |
-| Betrag | 5500 EUR |
-| Eingangskanal | Email |
-| Status | OFFEN |
-| Bemerkung | Automatisch erfasst via RPA Bot |
 
 ---
 
@@ -93,20 +87,17 @@ Die Rechnungsdaten kommen aus `rechnung_data.json`:
 
 ### Testergebnis
 
-Der Bot wurde am 05.06.2026 erfolgreich ausgeführt. Alle Aktivitäten liefen ohne Fehler durch:
+Der Bot wurde erfolgreich ausgeführt. Alle Aktivitäten liefen ohne Fehler durch:
 
 ```
-17:46:23  Preparing projects for debugging... completed
-17:46:26  Packages restored
-17:46:30  Building project completed
-17:46:31  RPA Workflow execution started
-17:46:32  Using Web App. Browser: Edge
-          URL: https://arslan182.github.io/Dvg-sprint-5/erp_frontend.html
-17:46:32  Healing agent configuration.
-17:46:36  RPA Workflow execution ended
+RPA Workflow execution started
+Using Web App. Browser: Edge
+URL: https://arslan182.github.io/Dvg-sprint-5/erp_frontend.html
+Healing agent configuration.
+RPA Workflow execution ended
 ```
 
-Gesamtlaufzeit: ca. 5 Sekunden. Alle Aktivitäten zeigten Status "Successful".
+Gesamtlaufzeit: ca. 27 Sekunden (Cloud Serverless). Alle Aktivitäten zeigten Status "Successful".
 
 Da der Bot als Unattended Bot in der UiPath Cloud läuft, passiert die Ausführung in einer separaten Browser-Session — nicht im lokalen Browser. Das Ergebnis ist im UiPath Live Stream und in den Aktivitäts-Vorschaubildern von Studio Web sichtbar.
 
@@ -122,67 +113,84 @@ Da der Bot als Unattended Bot in der UiPath Cloud läuft, passiert die Ausführu
 
 ### Überblick
 
-Den Bot haben wir als Unattended Bot in UiPath Orchestrator deployed und dann den BPMN-Prozess angepasst. Der bisherige User Task "Rechnungsdaten im ERP-System eingeben" ist jetzt ein automatischer Service Task, der den UiPath Connector aufruft.
+Den Bot haben wir vollständig in den Camunda-Prozess eingebunden. Der bisherige User Task "Rechnungsdaten im ERP-System eingeben" ist jetzt ein automatischer Service Task vom Typ `uipath-erp-queue`, der von unserem Python Worker (`auto_workers.py`) verarbeitet wird.
 
-### Deployment
+Der Worker holt sich einen OAuth2-Token von UiPath, ruft die StartJobs API auf und übergibt dabei die aktuellen Rechnungsdaten als InputArguments — die kommen direkt aus den Camunda-Prozessvariablen.
 
-1. In UiPath Studio Web auf "Publish" geklickt → "Shared" ausgewählt → Version 1.0.0 veröffentlicht
-2. Im UiPath Orchestrator: Solutions → Deploy → "Install as root folder" → Deployment war nach ca. 2 Minuten abgeschlossen (Status: Successful, Active)
-3. Folder: `Shared/Solution`
+### Ablauf
 
-### External App für Camunda
+```
+Camunda Task: uipath-erp-queue
+        │
+        ▼
+auto_workers.py → OAuth2 Token holen
+        │
+        ▼
+UiPath StartJobs API (POST)
+        │    Header: X-UIPATH-OrganizationUnitId: 7919369
+        │    Body: ReleaseName, Strategy, InputArguments (JSON)
+        ▼
+UiPath Orchestrator startet Bot auf Default Serverless Machine
+        │
+        ▼
+Bot öffnet ERP-Frontend, füllt Formular mit echten Daten aus
+```
 
-Damit Camunda den Bot aufrufen kann, brauchen wir OAuth2-Credentials. Wir haben in der UiPath Cloud Admin unter External Applications eine neue Confidential Application angelegt:
+### UiPath Konfiguration
 
-- **Name:** Camunda-Connector
-- **Scope:** OR.Execution (Orchestrator API Access)
-- **Typ:** Confidential application (Client Credentials Flow)
+Damit das funktioniert, mussten wir in UiPath einiges einrichten:
+
+**External Application (OAuth2):**
+- Name: Camunda-Connector
+- Typ: Confidential (Client Credentials Flow)
+- Scopes: OR.Jobs, OR.Jobs.Write, OR.Execution, OR.Execution.Write, OR.Queues, OR.Queues.Read, OR.Queues.Write
+
+**Folder-Zugang:**
+- Folder "Solution" → Manage Access → Camunda-Connector als "Automation User" + "Folder Administrator" hinzugefügt
+- Folder "Solution" → Manage Access → Default Robot (Unattended) als "Automation User" hinzugefügt
+
+**Robot:**
+- Default Robot (Robot Account, Unattended) ist dem Folder Solution zugewiesen
+- Machine: Default Serverless (Cloud Robot)
+
+### Python Worker
+
+Der Task `uipath-erp-queue` in `auto_workers.py` macht folgendes:
+
+1. OAuth2-Token von `https://cloud.uipath.com/{org}/identity_/connect/token` holen
+2. POST auf die StartJobs API mit den Rechnungsdaten als InputArguments
+3. Job-ID aus der Response lesen und als Prozessvariable zurückgeben
+
+Alle Konfigurationswerte (Client-ID, Secret, Org, Tenant, Folder-ID, Process-Name) kommen aus der `.env` Datei — kein Hardcoding im Code.
 
 ### BPMN-Änderung
 
-Der User Task `Activity_1e8b8pr` wurde in einen Service Task mit dem Camunda UiPath Connector umgewandelt:
+Der Task wurde von User Task auf Service Task umgestellt:
 
-**Vorher:**
-```xml
-<bpmn:userTask id="Activity_1e8b8pr" name="Rechnungsdaten im ERP-System eingeben">
-  <bpmn:extensionElements>
-    <zeebe:userTask />
-    <zeebe:formDefinition formId="invoice-form" />
-  </bpmn:extensionElements>
-</bpmn:userTask>
-```
-
-**Nachher:**
 ```xml
 <bpmn:serviceTask id="Activity_1e8b8pr" name="Rechnungsdaten im ERP-System eingeben (RPA)">
   <bpmn:extensionElements>
-    <zeebe:taskDefinition type="io.camunda:uipath:1" />
-    <zeebe:ioMapping>
-      <!-- OAuth2-Konfiguration und Orchestrator-Details -->
-      <zeebe:input source="Solution" target="folderPath" />
-      <zeebe:input source="RPA Workflow" target="processName" />
-      <zeebe:input source="startJob" target="operationType" />
-    </zeebe:ioMapping>
+    <zeebe:taskDefinition type="uipath-erp-queue" />
   </bpmn:extensionElements>
 </bpmn:serviceTask>
 ```
 
-### Konfiguration UiPath Connector
+### Konfiguration (.env)
 
-| Parameter | Wert |
-|-----------|------|
-| Orchestrator URL | https://cloud.uipath.com |
-| Organization | gruppe11dvg |
-| Tenant | DefaultTenant |
-| Folder | Solution |
-| Process | RPA Workflow |
-| Auth | OAuth2 Client Credentials |
-| Scope | OR.Execution |
+| Variable | Beschreibung |
+|----------|--------------|
+| UIPATH_CLIENT_ID | External App Client ID |
+| UIPATH_CLIENT_SECRET | External App Client Secret |
+| UIPATH_ORG | gruppe11dvg |
+| UIPATH_TENANT | DefaultTenant |
+| UIPATH_FOLDER_ID | 7919369 (Solution Folder) |
+| UIPATH_PROCESS_NAME | RPA Workflow |
+| UIPATH_QUEUE_NAME | ERP-Rechnungen |
 
 ---
 
 ## Fazit
 
-Der Schritt von einem manuellen User Task zu einem vollautomatischen RPA-Bot war der Kern von Sprint 5. Was uns am meisten Zeit gekostet hat, waren die Selektor-Probleme mit den TypeInto-Aktivitäten — das hätten wir ohne die JavaScript-Lösung nicht so schnell hinbekommen.
+Der Schritt von einem manuellen User Task zu einem vollautomatischen RPA-Bot war der Kern von Sprint 5. Was uns am meisten Zeit gekostet hat, waren die Selektor-Probleme mit den TypeInto-Aktivitäten und die UiPath API-Konfiguration (Robot-Accounts, Folder-Zugang, OAuth2-Scopes).
 
-Die Integration mit Camunda über den UiPath Connector macht aus dem Bot einen richtigen Teil des Gesamtprozesses: Sobald eine Rechnung freigegeben wird, startet Camunda automatisch den Bot, der die Daten ins ERP einträgt — ohne dass jemand manuell eingreifen muss.
+Am Ende läuft die komplette Kette vollautomatisch: Camunda picked den Task, der Python Worker ruft die UiPath API auf, der Bot startet in der Cloud und trägt die echten Rechnungsdaten aus dem Camunda-Prozess ins ERP-Frontend ein — ohne manuellen Eingriff.

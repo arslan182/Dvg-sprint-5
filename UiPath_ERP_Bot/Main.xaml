@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Activity mc:Ignorable="sap sap2010 sads" x:Class="ERP_RechnungsBot.Main"
+  xmlns="http://schemas.microsoft.com/netfx/2009/xaml/activities"
+  xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+  xmlns:mva="clr-namespace:Microsoft.VisualBasic.Activities;assembly=System.Activities"
+  xmlns:sap="http://schemas.microsoft.com/netfx/2009/xaml/activities/presentation"
+  xmlns:sap2010="http://schemas.microsoft.com/netfx/2010/xaml/activities/presentation"
+  xmlns:sads="http://schemas.microsoft.com/netfx/2010/xaml/activities/debugger"
+  xmlns:ui="clr-namespace:UiPath.UIAutomationNext.Activities;assembly=UiPath.UIAutomationNext.Activities"
+  xmlns:uib="clr-namespace:UiPath.UIAutomationNext.Activities.Browser;assembly=UiPath.UIAutomationNext.Activities"
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+  <!--
+    Sprint 5 – RPA Bot: Automatische Erfassung von Rechnungsdaten im ERP-System
+    Gruppe G11 | Hochschule Karlsruhe | Modul: Digitalisierung von Geschäftsprozessen
+
+    Workflow:
+      1. Eingabe-Argumente prüfen, ggf. Testdaten setzen
+      2. Microsoft Edge mit ERP-Frontend öffnen
+      3. Alle Felder per JavaScript Injection befüllen (statt TypeInto,
+         da Selektoren auf cloud-gehosteten Seiten instabil waren)
+      4. Submit-Button automatisch klicken
+
+    ERP-URL: https://arslan182.github.io/Dvg-sprint-5/erp_frontend.html
+  -->
+
+  <x:Members>
+    <x:Property Name="in_rechnungs_nummer" Type="InArgument(x:String)" />
+    <x:Property Name="in_lieferant"        Type="InArgument(x:String)" />
+    <x:Property Name="in_betrag"           Type="InArgument(x:String)" />
+    <x:Property Name="in_eingangskanal"    Type="InArgument(x:String)" />
+    <x:Property Name="in_waehrung"         Type="InArgument(x:String)" />
+    <x:Property Name="in_status"           Type="InArgument(x:String)" />
+    <x:Property Name="in_bemerkung"        Type="InArgument(x:String)" />
+  </x:Members>
+
+  <sap2010:WorkflowViewState.IdRef>Main</sap2010:WorkflowViewState.IdRef>
+  <mva:VisualBasic.Settings>Assembly references and imported namespaces serialized as XML namespaces</mva:VisualBasic.Settings>
+
+  <Sequence DisplayName="RPA Workflow – ERP Rechnungserfassung" sap:VirtualizedContainerService.HintSize="614,700">
+    <sap2010:WorkflowViewState.IdRef>Sequence_Main</sap2010:WorkflowViewState.IdRef>
+
+    <Sequence.Variables>
+      <Variable x:TypeArguments="x:String" Default="RE-2026-00042"                    Name="v_rechnungs_nummer" />
+      <Variable x:TypeArguments="x:String" Default="Mustermann GmbH"                  Name="v_lieferant" />
+      <Variable x:TypeArguments="x:String" Default="5500"                             Name="v_betrag" />
+      <Variable x:TypeArguments="x:String" Default="Email"                            Name="v_eingangskanal" />
+      <Variable x:TypeArguments="x:String" Default="EUR"                              Name="v_waehrung" />
+      <Variable x:TypeArguments="x:String" Default="OFFEN"                            Name="v_status" />
+      <Variable x:TypeArguments="x:String" Default="Automatisch erfasst via RPA Bot"  Name="v_bemerkung" />
+      <Variable x:TypeArguments="x:String"                                            Name="v_js_script" />
+    </Sequence.Variables>
+
+    <!-- ── Argumente übernehmen (Fallback auf Testwerte) ────────────────── -->
+
+    <Assign DisplayName="Assign: in_rechnungs_nummer" sap:VirtualizedContainerService.HintSize="614,56">
+      <sap2010:WorkflowViewState.IdRef>Assign_1</sap2010:WorkflowViewState.IdRef>
+      <Assign.To>
+        <OutArgument x:TypeArguments="x:String">[v_rechnungs_nummer]</OutArgument>
+      </Assign.To>
+      <Assign.Value>
+        <InArgument x:TypeArguments="x:String">[If(String.IsNullOrEmpty(in_rechnungs_nummer), "RE-2026-00042", in_rechnungs_nummer)]</InArgument>
+      </Assign.Value>
+    </Assign>
+
+    <Assign DisplayName="Assign: in_lieferant" sap:VirtualizedContainerService.HintSize="614,56">
+      <sap2010:WorkflowViewState.IdRef>Assign_2</sap2010:WorkflowViewState.IdRef>
+      <Assign.To>
+        <OutArgument x:TypeArguments="x:String">[v_lieferant]</OutArgument>
+      </Assign.To>
+      <Assign.Value>
+        <InArgument x:TypeArguments="x:String">[If(String.IsNullOrEmpty(in_lieferant), "Mustermann GmbH", in_lieferant)]</InArgument>
+      </Assign.Value>
+    </Assign>
+
+    <Assign DisplayName="Assign: in_betrag" sap:VirtualizedContainerService.HintSize="614,56">
+      <sap2010:WorkflowViewState.IdRef>Assign_3</sap2010:WorkflowViewState.IdRef>
+      <Assign.To>
+        <OutArgument x:TypeArguments="x:String">[v_betrag]</OutArgument>
+      </Assign.To>
+      <Assign.Value>
+        <InArgument x:TypeArguments="x:String">[If(String.IsNullOrEmpty(in_betrag), "5500", in_betrag)]</InArgument>
+      </Assign.Value>
+    </Assign>
+
+    <!-- ── JavaScript-Code als String zusammenbauen ─────────────────────── -->
+
+    <Assign DisplayName="Assign: JavaScript-Code aufbauen" sap:VirtualizedContainerService.HintSize="614,56">
+      <sap2010:WorkflowViewState.IdRef>Assign_JS</sap2010:WorkflowViewState.IdRef>
+      <Assign.To>
+        <OutArgument x:TypeArguments="x:String">[v_js_script]</OutArgument>
+      </Assign.To>
+      <Assign.Value>
+        <InArgument x:TypeArguments="x:String">[
+          "function (element, input) {" &amp; vbLf &amp;
+          "  document.getElementById('rechnungs_nummer').value = '" &amp; v_rechnungs_nummer &amp; "';" &amp; vbLf &amp;
+          "  document.getElementById('lieferant').value = '" &amp; v_lieferant &amp; "';" &amp; vbLf &amp;
+          "  document.getElementById('betrag').value = '" &amp; v_betrag &amp; "';" &amp; vbLf &amp;
+          "  document.getElementById('eingangskanal').value = '" &amp; v_eingangskanal &amp; "';" &amp; vbLf &amp;
+          "  document.getElementById('waehrung').value = '" &amp; v_waehrung &amp; "';" &amp; vbLf &amp;
+          "  document.getElementById('status').value = '" &amp; v_status &amp; "';" &amp; vbLf &amp;
+          "  document.getElementById('bemerkung').value = '" &amp; v_bemerkung &amp; "';" &amp; vbLf &amp;
+          "  document.querySelector('button[type=submit]').click();" &amp; vbLf &amp;
+          "}"
+        ]</InArgument>
+      </Assign.Value>
+    </Assign>
+
+    <!-- ── Browser öffnen und JS ausführen ──────────────────────────────── -->
+
+    <uib:UseApplicationBrowser
+      DisplayName="Use Browser Edge: ERP-System – Rechnungserfassung"
+      BrowserType="Edge"
+      Url="https://arslan182.github.io/Dvg-sprint-5/erp_frontend.html"
+      OpenMode="NewSession"
+      sap:VirtualizedContainerService.HintSize="614,200">
+      <sap2010:WorkflowViewState.IdRef>UseApplicationBrowser_1</sap2010:WorkflowViewState.IdRef>
+
+      <ActivityAction x:TypeArguments="ui:IWindowUiDescriptor">
+        <ActivityAction.Argument>
+          <DelegateInArgument x:TypeArguments="ui:IWindowUiDescriptor" Name="browserWindow" />
+        </ActivityAction.Argument>
+
+        <!--
+          Inject Js Script
+          Ziel: Formular "Neue Rechnung erfassen"
+          Alle Felder werden über ihre HTML-IDs gesetzt; danach Submit geklickt.
+        -->
+        <ui:InjectJsScript
+          DisplayName="Inject Js Script 'Neue Rechnung erfassen – Felder befüllen &amp; absenden'"
+          Script="[v_js_script]"
+          sap:VirtualizedContainerService.HintSize="580,100">
+          <sap2010:WorkflowViewState.IdRef>InjectJsScript_1</sap2010:WorkflowViewState.IdRef>
+          <ui:InjectJsScript.Target>
+            <ui:TargetAnchor>
+              <ui:TargetAnchor.Selector>
+                <x:String>&lt;html app="msedge.exe" title="ERP-System – Rechnungserfassung" /&gt;</x:String>
+              </ui:TargetAnchor.Selector>
+            </ui:TargetAnchor>
+          </ui:InjectJsScript.Target>
+        </ui:InjectJsScript>
+
+      </ActivityAction>
+    </uib:UseApplicationBrowser>
+
+  </Sequence>
+</Activity>
