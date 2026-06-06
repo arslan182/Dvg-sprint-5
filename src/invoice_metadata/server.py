@@ -67,8 +67,13 @@ class RechnungService(invoice_pb2_grpc.RechnungServiceServicer):
 
 
 def serve():
+    try:
+        servicer = RechnungService()
+    except Exception as e:
+        print(f"[gRPC Server] Datenbankverbindung fehlgeschlagen: {e}")
+        return
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
-    invoice_pb2_grpc.add_RechnungServiceServicer_to_server(RechnungService(), server)
+    invoice_pb2_grpc.add_RechnungServiceServicer_to_server(servicer, server)
     server.add_insecure_port("[::]:50051")
     server.start()
     print("[gRPC Server] Läuft auf Port 50051...")

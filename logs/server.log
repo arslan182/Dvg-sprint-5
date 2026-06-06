@@ -1,20 +1,2 @@
-E0601 23:50:13.923018   19332 add_port.cc:83] Failed to add port to server: No address added out of total 1 resolved for '[::]:50051'
-Traceback (most recent call last):
-  File "<frozen runpy>", line 198, in _run_module_as_main
-  File "<frozen runpy>", line 88, in _run_code
-  File "C:\Users\aliar\workspace\Dvg\Dvg-sprint-4\src\invoice_metadata\server.py", line 79, in <module>
-    serve()
-    ~~~~~^^
-  File "C:\Users\aliar\workspace\Dvg\Dvg-sprint-4\src\invoice_metadata\server.py", line 72, in serve
-    server.add_insecure_port("[::]:50051")
-    ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^
-  File "C:\Users\aliar\Documents\GitHub\fastapi-gruppe-3\.venv\Lib\site-packages\grpc\_server.py", line 1460, in add_insecure_port
-    return _common.validate_port_binding_result(
-           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
-        address, _add_insecure_port(self._state, _common.encode(address))
-        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-    )
-    ^
-  File "C:\Users\aliar\Documents\GitHub\fastapi-gruppe-3\.venv\Lib\site-packages\grpc\_common.py", line 179, in validate_port_binding_result
-    raise RuntimeError(_ERROR_MESSAGE_PORT_BINDING_FAILED % address)
-RuntimeError: Failed to bind to address [::]:50051; set GRPC_VERBOSITY=debug environment variable to see detailed error message.
+[gRPC Server] Lõuft auf Port 50051...
+[DB] Rechnung R-001 gespeichert.
