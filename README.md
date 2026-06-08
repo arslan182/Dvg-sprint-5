@@ -8,7 +8,7 @@
 
 Sprint 5 baut auf dem Camunda-Workflow aus Sprint 4 auf. Wir haben einen UiPath RPA-Bot gebaut, der den bisher manuellen Schritt "Rechnungsdaten im ERP-System eingeben" automatisiert. Der Bot öffnet das ERP-Frontend im Browser und füllt das Formular selbstständig mit den Rechnungsdaten aus — und als optionales Extra haben wir ihn direkt in den Camunda-Prozess eingebunden, sodass alles automatisch läuft.
 
-Der Bot läuft als Unattended Bot in der UiPath Cloud und wird über den Camunda UiPath Connector getriggert.
+Der Bot läuft als Unattended Bot in der UiPath Cloud und wird automatisch vom Python Worker über die UiPath StartJobs API gestartet.
 
 ---
 
@@ -114,6 +114,9 @@ UIPATH_TENANT=DefaultTenant
 UIPATH_FOLDER_ID=7919369
 UIPATH_QUEUE_NAME=ERP-Rechnungen
 UIPATH_PROCESS_NAME=RPA Workflow
+UIPATH_POLL_INTERVAL=5
+UIPATH_POLL_RETRIES=30
+UIPATH_JOB_TIMEOUT_MS=180000
 ```
 
 ### 2. Docker starten
@@ -181,7 +184,6 @@ Der Prozess heißt **Workflow-Sprint-4** in Camunda 8 SaaS.
 - Rechnung Validieren
 - Compliance-Fall manuell prüfen
 - Rechnung freigeben
-- Rechnungsdaten im ERP-System eingeben
 
 ### Fehlerbehandlung (Boundary Error Events)
 

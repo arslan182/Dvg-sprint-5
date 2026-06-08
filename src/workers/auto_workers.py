@@ -20,6 +20,9 @@ UIPATH_TENANT        = os.getenv("UIPATH_TENANT")
 UIPATH_FOLDER_ID     = os.getenv("UIPATH_FOLDER_ID")
 UIPATH_QUEUE_NAME    = os.getenv("UIPATH_QUEUE_NAME")
 UIPATH_PROCESS_NAME  = os.getenv("UIPATH_PROCESS_NAME", "RPA Workflow")
+UIPATH_POLL_INTERVAL  = int(os.getenv("UIPATH_POLL_INTERVAL", "5"))
+UIPATH_POLL_RETRIES   = int(os.getenv("UIPATH_POLL_RETRIES", "30"))
+UIPATH_JOB_TIMEOUT_MS = int(os.getenv("UIPATH_JOB_TIMEOUT_MS", "180000"))
 
 
 async def rechnung_erfassen(**kwargs):
@@ -156,11 +159,30 @@ async def uipath_erp_queue(**kwargs):
         print(f"[uipath-erp-queue] StartJobs: {start_resp.status_code} {start_resp.text[:300]}")
         start_resp.raise_for_status()
         item_id = start_resp.json().get("value", [{}])[0].get("Id", "gestartet")
-        print(f"[uipath-erp-queue] Queue-Item erstellt, ID: {item_id}")
+        print(f"[uipath-erp-queue] Job gestartet, ID: {item_id}")
+
+        for _ in range(UIPATH_POLL_RETRIES):
+            await asyncio.sleep(UIPATH_POLL_INTERVAL)
+            status_resp = await client.get(
+                f"https://cloud.uipath.com/{UIPATH_ORG}/{UIPATH_TENANT}/orchestrator_/odata/Jobs({item_id})",
+                headers={
+                    "Authorization":               f"Bearer {access_token}",
+                    "X-UIPATH-OrganizationUnitId": str(UIPATH_FOLDER_ID),
+                },
+            )
+            if status_resp.status_code == 200:
+                state = status_resp.json().get("State", "")
+                print(f"[uipath-erp-queue] Job Status: {state}")
+                if state == "Successful":
+                    print(f"[uipath-erp-queue] Bot erfolgreich abgeschlossen.")
+                    break
+                if state in ("Faulted", "Stopped"):
+                    raise Exception(f"UiPath Job fehlgeschlagen: {state}")
 
     return {
         "uipath_queue_item_id": item_id,
         "uipath_queue_zeitstempel": datetime.now().isoformat(),
+        "uipath_job_status": "Successful",
     }
 
 
@@ -191,7 +213,7 @@ async def main():
     worker.task(task_type="compliance-check")(compliance_check)
     worker.task(task_type="send-request-email")(send_request_email)
     worker.task(task_type="rechnung-archivieren")(rechnung_archivieren)
-    worker.task(task_type="uipath-erp-queue")(uipath_erp_queue)
+    worker.task(task_type="uipath-erp-queue", timeout_ms=UIPATH_JOB_TIMEOUT_MS)(uipath_erp_queue)
 
     print(f"[Auto Workers] Cluster: {CAMUNDA_CLUSTER_ID}")
     print("[Auto Workers] Wartet auf Jobs...")

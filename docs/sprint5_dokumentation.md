@@ -115,7 +115,7 @@ Da der Bot als Unattended Bot in der UiPath Cloud läuft, passiert die Ausführu
 
 Den Bot haben wir vollständig in den Camunda-Prozess eingebunden. Der bisherige User Task "Rechnungsdaten im ERP-System eingeben" ist jetzt ein automatischer Service Task vom Typ `uipath-erp-queue`, der von unserem Python Worker (`auto_workers.py`) verarbeitet wird.
 
-Der Worker holt sich einen OAuth2-Token von UiPath, ruft die StartJobs API auf und übergibt dabei die aktuellen Rechnungsdaten als InputArguments — die kommen direkt aus den Camunda-Prozessvariablen.
+Der Worker holt sich einen OAuth2-Token von UiPath, ruft die StartJobs API auf und übergibt dabei die aktuellen Rechnungsdaten als InputArguments — die kommen direkt aus den Camunda-Prozessvariablen. Danach pollt der Worker alle 5 Sekunden den Job-Status bis der Bot fertig ist, bevor er den Camunda-Task abschließt.
 
 ### Ablauf
 
@@ -186,6 +186,9 @@ Der Task wurde von User Task auf Service Task umgestellt:
 | UIPATH_FOLDER_ID | 7919369 (Solution Folder) |
 | UIPATH_PROCESS_NAME | RPA Workflow |
 | UIPATH_QUEUE_NAME | ERP-Rechnungen |
+| UIPATH_POLL_INTERVAL | Wartezeit in Sekunden zwischen Status-Abfragen (Standard: 5) |
+| UIPATH_POLL_RETRIES | Maximale Anzahl Status-Abfragen (Standard: 30) |
+| UIPATH_JOB_TIMEOUT_MS | Camunda Job-Timeout in ms — muss größer als Poll-Zeit sein (Standard: 180000) |
 
 ---
 

@@ -1,16 +1,2 @@
 [Auto Workers] Cluster: 487e2664-45fe-4a21-9e53-860eddc37e5e
 [Auto Workers] Wartet auf Jobs...
-[rechnung-erfassen] R-001 via email
-[compliance-check] R-001: 5000.0 EUR (Schwellenwert: 10000)
-[uipath-erp-queue] Starte f³r Rechnung R-001
-[uipath-erp-queue] Token erhalten
-[uipath-erp-queue] StartJobs: 201 {"@odata.context":"https://cloud.uipath.com/gruppe11dvg/DefaultTenant/orchestrator_/odata/$metadata#Jobs","value":[{"FolderKey":"e465613c-7151-4c9e-9037-633678153cce","Key":"628c5740-a13a-4c69-b7d9-acc706e78b68","StartTime":null,"EndTime":null,"State":"Pending","SubState":null,"JobPriority":"Normal"
-[uipath-erp-queue] Queue-Item erstellt, ID: 685460966
-[rechnung-archivieren] R-001, 5000 EUR
-[rechnung-erfassen] R-001 via email
-[compliance-check] R-001: 5000.0 EUR (Schwellenwert: 10000)
-[uipath-erp-queue] Starte f³r Rechnung R-001
-[uipath-erp-queue] Token erhalten
-[uipath-erp-queue] StartJobs: 201 {"@odata.context":"https://cloud.uipath.com/gruppe11dvg/DefaultTenant/orchestrator_/odata/$metadata#Jobs","value":[{"FolderKey":"e465613c-7151-4c9e-9037-633678153cce","Key":"d6d3b85d-5bcc-4722-bc25-1b101ec309c6","StartTime":null,"EndTime":null,"State":"Pending","SubState":null,"JobPriority":"Normal"
-[uipath-erp-queue] Queue-Item erstellt, ID: 685463377
-[rechnung-archivieren] R-001, 5000 EUR
