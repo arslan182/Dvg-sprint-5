@@ -2,7 +2,7 @@
 platform win32 -- Python 3.14.3, pytest-9.0.2, pluggy-1.6.0 -- C:\Users\aliar\Documents\GitHub\fastapi-gruppe-3\.venv\Scripts\python.exe
 cachedir: .pytest_cache
 metadata: {'Python': '3.14.3', 'Platform': 'Windows-11-10.0.26200-SP0', 'Packages': {'pytest': '9.0.2', 'pluggy': '1.6.0'}, 'Plugins': {'anyio': '4.12.1', 'locust': '2.43.3', 'cov': '7.0.0', 'env': '1.6.0', 'html': '4.2.0', 'metadata': '3.1.1', 'mock': '3.15.1'}, 'JAVA_HOME': 'C:\\Zimmermann\\jdk'}
-rootdir: C:\Users\aliar\workspace\Dvg\Dvg-sprint-4
+rootdir: C:\Users\aliar\workspace\Dvg\Dvg-sprint-5
 plugins: anyio-4.12.1, locust-2.43.3, cov-7.0.0, env-1.6.0, html-4.2.0, metadata-3.1.1, mock-3.15.1
 collecting ... collected 11 items
 
@@ -18,4 +18,4 @@ tests/test_workers.py::TestComplianceCheck::test_usd_schwellenwert PASSED [ 81%]
 tests/test_workers.py::TestComplianceCheck::test_chf_schwellenwert PASSED [ 90%]
 tests/test_workers.py::TestComplianceCheck::test_gbp_schwellenwert PASSED [100%]
 
-============================= 11 passed in 0.44s ==============================
+============================= 11 passed in 1.19s ==============================
